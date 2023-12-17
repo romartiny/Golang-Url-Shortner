@@ -91,14 +91,34 @@ func (s *Storage) GetURL(alias string) (string, error) {
 
 	err = stmt.QueryRow(alias).Scan(&resURL)
 
-	//not alias in database
-	if errors.Is(err, sql.ErrNoRows) {
-		return "", storage.ErrURLNotFound
-	}
-
-	//another error
+	//not alias in database & est error
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrURLNotFound
+		}
+
 		return "", fmt.Errorf("%s: execute statement: %w", op, err)
 	}
 
+	//return url
+	return resURL, nil
+}
+
+func (s *Storage) DeleteURL(alias string) error {
+	//for errors debugging
+	const op = "storage.sqlite.DeleteURL"
+
+	//find and delete url via alias
+	stmt, err := s.db.Prepare("DELETE FROM url WHERE alias =?")
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	//error
+	_, err = stmt.Exec(alias)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
