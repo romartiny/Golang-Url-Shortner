@@ -1,10 +1,13 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"os"
 
 	"golang-url-shortner/internal/config"
+	mwLogger "golang-url-shortner/internal/http-server/middleware/logger"
 	"golang-url-shortner/internal/lib/logger/sl"
 	"golang-url-shortner/internal/storage/sqlite"
 )
@@ -33,6 +36,21 @@ func main() {
 	}
 
 	_ = storage
+
+	router := chi.NewRouter()
+
+	//making for easy finding lines in Grafana/Kibana via request-id (grep)
+	router.Use(middleware.RequestID)
+	//for getting real ip
+	router.Use(middleware.RealIP)
+	//logger from chi for more information
+	router.Use(middleware.Logger)
+	//custom logger from internal
+	router.Use(mwLogger.New(log))
+	//panic from handler + no drop application
+	router.Use(middleware.Recoverer)
+	//write urls for api
+	router.Use(middleware.URLFormat)
 
 	//init router: chi & chi render
 
