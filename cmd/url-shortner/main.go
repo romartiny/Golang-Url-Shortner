@@ -9,6 +9,7 @@ import (
 	"golang-url-shortner/internal/storage/sqlite"
 )
 
+// environment constants
 const (
 	envLocal = "local"
 	envDev   = "dev"
@@ -42,6 +43,7 @@ func main() {
 func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
 
+	//switch env for different level debugging
 	switch env {
 	case envLocal:
 		log = slog.New(
