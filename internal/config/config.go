@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Env         string `yaml:"env" env:"env" env-default:"local" env-required:"true"`
 	StoragePath string `yaml:"storage_path" env-required:"true"`
+	Version     string `yaml:"version" env-required:"true"`
 	HTTPServer  `yaml:"https_server"`
 }
 
@@ -18,6 +19,8 @@ type HTTPServer struct {
 	Address     string        `yaml:"address" env-default:"localhost:8082"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	User        string        `yaml:"user" env-default:"test"`
+	Password    string        `yaml:"password" env-default:"test"`
 }
 
 func MustLoad() *Config {

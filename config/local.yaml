@@ -1,6 +1,9 @@
 env: "local" #local, dev, prod
 storage_path: "./storage/storage.db" #db path
+version: "1.0" #version
 http_server:
   address: "localhost:8082" #address
   timeout: 4s #for query's reading & sending responses
   idle_timeout: 60s #reuse connection
+  user: "test" #username
+  password: "test" #password

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"golang-url-shortner/internal/http-server/handlers/redirect"
 	save "golang-url-shortner/internal/http-server/handlers/url"
 	mwLogger "golang-url-shortner/internal/http-server/middleware/logger"
 	"golang.org/x/exp/slog"
@@ -28,7 +29,11 @@ func main() {
 
 	//init logger: sl
 	log := setupLogger(cfg.Env)
-	log.Info("starting golang-url-shortner", slog.String("env", cfg.Env))
+	log.Info(
+		"starting golang-url-shortner",
+		slog.String("env", cfg.Env),
+		slog.String("version", cfg.Version),
+	)
 	log.Debug("debug messages are enabled")
 
 	//init storage: sqlite
@@ -56,7 +61,16 @@ func main() {
 	//write urls for api
 	router.Use(middleware.URLFormat)
 
-	router.Post("/url", save.New(log, storage))
+	router.Route("/url", func(r chi.Router) {
+		r.Use(middleware.BasicAuth("golang-url-shortner", map[string]string{
+			cfg.HTTPServer.User: cfg.HTTPServer.Password,
+		}))
+
+		r.Post("/", save.New(log, storage))
+	})
+
+	//routes
+	router.Get("/{alias}", redirect.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
