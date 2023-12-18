@@ -23,6 +23,7 @@ const (
 	envProd  = "prod"
 )
 
+// local run CONFIG_PATH=config/local.yaml go run cmd/url-shortner/main.go
 func main() {
 	//init config: cleanenv
 	cfg := config.MustLoad()
