@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"log/slog"
+	"golang.org/x/exp/slog"
 	"net/http"
 	"time"
 

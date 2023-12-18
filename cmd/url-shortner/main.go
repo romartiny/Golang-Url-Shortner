@@ -3,11 +3,12 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"log/slog"
+	"golang.org/x/exp/slog"
 	"os"
 
 	"golang-url-shortner/internal/config"
 	mwLogger "golang-url-shortner/internal/http-server/middleware/logger"
+	"golang-url-shortner/internal/lib/logger/handlers/slogpretty"
 	"golang-url-shortner/internal/lib/logger/sl"
 	"golang-url-shortner/internal/storage/sqlite"
 )
@@ -64,9 +65,12 @@ func setupLogger(env string) *slog.Logger {
 	//switch env for different level debugging
 	switch env {
 	case envLocal:
-		log = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
-		)
+		//init slogpretty
+		log = setupPrettySlog()
+		//for normal log
+		//log = slog.New(
+		//	slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		//)
 	case envDev:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
@@ -78,4 +82,18 @@ func setupLogger(env string) *slog.Logger {
 	}
 
 	return log
+}
+
+// prettier for logging
+func setupPrettySlog() *slog.Logger {
+	opts := slogpretty.PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level:     slog.LevelDebug,
+			AddSource: true,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
 }
