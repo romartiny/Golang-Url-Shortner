@@ -3,11 +3,13 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	save "golang-url-shortner/internal/http-server/handlers/url"
+	mwLogger "golang-url-shortner/internal/http-server/middleware/logger"
 	"golang.org/x/exp/slog"
+	"net/http"
 	"os"
 
 	"golang-url-shortner/internal/config"
-	mwLogger "golang-url-shortner/internal/http-server/middleware/logger"
 	"golang-url-shortner/internal/lib/logger/handlers/slogpretty"
 	"golang-url-shortner/internal/lib/logger/sl"
 	"golang-url-shortner/internal/storage/sqlite"
@@ -38,6 +40,7 @@ func main() {
 
 	_ = storage
 
+	//init router: chi & chi render
 	router := chi.NewRouter()
 
 	//making for easy finding lines in Grafana/Kibana via request-id (grep)
@@ -53,7 +56,23 @@ func main() {
 	//write urls for api
 	router.Use(middleware.URLFormat)
 
-	//init router: chi & chi render
+	router.Post("/url", save.New(log, storage))
+
+	log.Info("starting server", slog.String("address", cfg.Address))
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server", sl.Err(err))
+	}
+
+	log.Error("server stopped")
 
 	//run server
 
